@@ -80,15 +80,32 @@
     const urlParams = new URLSearchParams(location.search);
 
     $(function ()  {
+      let type = urlParams.get('type');
       let token = urlParams.get('token');
+      if (!type) {
+        $('h1').text('올바른 접근이 아닙니다');
+        $('span').text('문제가 지속될 경우 관리자에게 문의하세요.');
+        $('span').css('display', 'block');
+        return;
+      }
       if (!token) {
         $('h1').text('인증 코드가 올바르지 않습니다');
         $('span').text('문제가 지속될 경우 관리자에게 문의하세요.');
         $('span').css('display', 'block');
         return;
       }
-      $.get(`https://auth.buildin.kr/auth/verify?token=${token}`, (data) => {
-        if (data.code == 200) {
+      switch (type) {
+        case 'emailverify':
+          $.get(`https://auth.buildin.kr/auth/verify?token=${token}`,handleResponse);
+          break;
+        case 'changepass':
+          $.get(`https://auth.buildin.kr/auth/changePass?token=${token}`,handleResponse);
+          break;
+      }
+    });
+
+    function handleResponse(data) {
+      if (data.code == 200) {
           $('h1').text('인증이 완료되었습니다');
           $('span').css('display', 'block');
           $('button').css('display', 'block');
@@ -96,9 +113,8 @@
           $('h1').text('인증 코드가 올바르지 않습니다');
           $('span').text('문제가 지속될 경우 관리자에게 문의하세요.');
           $('span').css('display', 'block');
-        }
-      });
-    });
+      }
+    }
 
     $('button').click(() => {
       window.location.href = 'https://buildin.kr';
